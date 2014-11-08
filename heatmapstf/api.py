@@ -1,3 +1,14 @@
+"""
+heatmapstf is an API wrapper over the heatmaps.tf site which seeks to provide and easy interface to the data
+as well as additional tools to minimize the amount of work needed to get the data in a very usable form. The
+API reports kill data from many non-Valve TF2 servers.
+
+Example Usage:
+    from heatmapstf import HeatmapsAPI
+    api = HeatmapsAPI()
+    print api.get_all_map_statistics()
+    print api.get_kill_data('ctf_2fort', limit=50)
+"""
 __author__ = 'Robert P. Cope'
 
 import requests
@@ -128,6 +139,12 @@ class HeatmapsTFAPI(object):
         return response.json()
 
     def get_all_map_statistics(self, raw=False):
+        """
+        Grab a list of all the maps available and their associated names and kill counts.
+        :param raw: (OPTIONAL) If raw is True, return the raw JSON from the API, otherwise return a list of
+                    TFMap objects, each of which have attributes 'name' and 'kill_count'
+        :return: A list of dicts in raw mode or TFMap objects is not in raw mode with the map name and kill count.
+        """
         try:
             map_statistics_list = self._get_data('data/maps.json')
             return map_statistics_list if raw else map(TFMap, map_statistics_list)
@@ -171,6 +188,81 @@ class HeatmapsTFAPI(object):
 
     def get_kill_data(self, map_name, fields=None, limit=50, killer_classes=None, killer_teams=None,
                       victim_classes=None, raw=False):
+        """
+
+        :param map_name: The name of the map to retrieve data for.
+        :param fields: (OPTIONAL) A list of fields to return in the query.
+
+            Possible Fields:
+            ------------------------------------------
+            id - The internal identifier for this kill
+            timestamp - The UNIX timestamp at which this kill occured
+            killer_class - The class of the killer
+            killer_weapon - The weapon of the killer
+            killer_x
+            killer_y
+            killer_z
+            victim_class - The class of the killer
+            victim_x
+            victim_y
+            victim_z
+            customkill - The custom kill bits for this kill
+            damagebits - The damage bits for this kill
+            death_flags - The death flags for this kill
+            team - The team of the killer
+
+            NOTE: For some fields, _if raw mode is off_, additional fields will be returned with interpreted results.
+            killer_class and victim_class will also yield killer_class_name and victim_class_name, which are the names
+            corresponding to the class index returned by the API. killer_weapon will yield killer_weapon_name which
+            gives the name of the weapon used. customkill will yield customkill_name, which is the name that the
+            customkill details, and death_flags will yeild a new list called death_flag_names, which gives the
+            string names of all the death flags that apply to the kill.
+
+        :param limit: (OPTIONAL) The maximum number of query results to return. Default is 50
+        :param killer_classes: (OPTIONAL) A list of classes that executed the kill to search over. Default is all.
+
+            Possible Killer Classes
+            ------------------------------------------
+            unknown
+            scout
+            sniper
+            soldier
+            demoman
+            medic
+            heavy
+            pyro
+            spy
+            engineer
+
+        :param killer_teams: (OPTIONAL) A list of teams the killer was on to search over. Default is all.
+
+            Possible Killer Teams
+            ------------------------------------------
+            teamless
+            spectator
+            red
+            blu
+
+
+        :param victim_classes: (OPTIONAL) A list of classes that were killed to search over. Default is all.
+
+            Possible Victim Classes
+            ------------------------------------------
+            unknown
+            scout
+            sniper
+            soldier
+            demoman
+            medic
+            heavy
+            pyro
+            spy
+            engineer
+
+        :param raw: If true, return the raw JSON, if false, convert everything into TFKill objects, and return
+                    extra data about some fields.
+        :return: Raw JSON data from the call or a list of TFKill objects detailing each kill.
+        """
         params = {}
         params.update(limit=limit)
         if fields:
