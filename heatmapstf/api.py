@@ -269,23 +269,24 @@ class HeatmapsTFAPI(object):
             self._check_data(fields, self.FIELDS_LIST,
                              'Threw assert because of bad fields argument: {}'.format(fields),
                              'An invalid field type was specified!')
-            params.update(fields=fields)
+            params.update(fields=",".join(fields))
         if killer_classes:
             self._check_data(killer_classes, self.CLASSES,
                              'Threw assert because of bad killer_classes argument: {}'.format(killer_classes),
                              'An invalid value was give in killer_classes!')
-            params.update(killer_class=killer_classes)
+            params.update(killer_class=",".join(killer_classes))
         if killer_teams:
             self._check_data(killer_teams, self.TEAMS,
                              'Threw assert because of bad killer_teams argument: {}'.format(killer_teams),
                              'An invalid value was given in killer_teams!')
-            params.update(killer_team=killer_teams)
+            params.update(killer_team=",".join(killer_teams))
         if victim_classes:
             self._check_data(victim_classes, self.CLASSES,
                              'Threw assert because of bad victim_classes argument: {}'.format(victim_classes),
                              'An invalid value was give in victim_classes!')
-            params.update(victim_class=victim_classes)
+            params.update(victim_class=",".join(victim_classes))
         try:
+            print params
             sub_uri = 'data/kills/{map_name}.json'.format(map_name=map_name)
             response = self._get_data(sub_uri, params=params)
             return response if raw else self._clean_kill_data(response)
